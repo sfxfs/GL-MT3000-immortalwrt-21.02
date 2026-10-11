@@ -39,6 +39,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Setup Go (external bootstrap for OpenWrt golang)
+      uses: actions/setup-go@v7
+      with:
+        go-version: '1.24.x'
+        cache: false
+
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -71,7 +77,15 @@ jobs:
       run: cd openwrt && ./scripts/feeds update -a
 
     - name: Golang mod
-      run: cd openwrt && git clone -b master --single-branch https://github.com/immortalwrt/packages.git packages_master && rm -rf ./feeds/packages/lang/golang && mv ./packages_master/lang/golang ./feeds/packages/lang && rm -rf ./packages_master
+      run: |
+        cd openwrt
+        git clone -b master --single-branch https://github.com/immortalwrt/packages.git packages_master
+        rm -rf ./feeds/packages/lang/golang
+        mv ./packages_master/lang/golang ./feeds/packages/lang
+        rm -rf ./packages_master
+        # Re-generate feed indexes so the new golang1.xx/golang-bootstrap packages
+        # are known to './scripts/feeds install' (they replace the 21.02 golang).
+        ./scripts/feeds update -i
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
@@ -80,6 +94,10 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        # Build host Go with the preinstalled toolchain as bootstrap instead of
+        # compiling the whole go1.4 -> 1.17 -> 1.20 -> 1.22 -> 1.24 bootstrap chain.
+        echo 'CONFIG_GOLANG_BUILD_BOOTSTRAP=n' >> openwrt/.config
+        echo "CONFIG_GOLANG_EXTERNAL_BOOTSTRAP_ROOT=\"$(go env GOROOT)\"" >> openwrt/.config
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
@@ -117,7 +135,7 @@ jobs:
 
     - name: Organize files
       id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf packages
@@ -133,7 +151,7 @@ jobs:
 
     - name: Generate release tag
       id: tag
-      if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         touch release.txt

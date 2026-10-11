@@ -53,7 +53,15 @@ jobs:
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
     - name: Golang mod
-      run: cd openwrt && git clone -b master --single-branch https://github.com/immortalwrt/packages.git packages_master && rm -rf ./feeds/packages/lang/golang && mv ./packages_master/lang/golang ./feeds/packages/lang && rm -rf ./packages_master
+      run: |
+        cd openwrt
+        git clone -b master --single-branch https://github.com/immortalwrt/packages.git packages_master
+        rm -rf ./feeds/packages/lang/golang
+        mv ./packages_master/lang/golang ./feeds/packages/lang
+        rm -rf ./packages_master
+        # Re-generate feed indexes so the new golang1.xx/golang-bootstrap packages
+        # are known to './scripts/feeds install' (they replace the 21.02 golang).
+        ./scripts/feeds update -i
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
 
