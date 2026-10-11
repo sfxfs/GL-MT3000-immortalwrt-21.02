@@ -21,10 +21,13 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    permissions:
+      actions: write
+      contents: read
 
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v7
 
     - name: Initialization environment
       env:
@@ -77,18 +80,18 @@ jobs:
         mkdir -p /tmp/upload
         cp .config /tmp/upload
     - name: 上传配置文件
-      uses: actions/upload-artifact@main
+      uses: actions/upload-artifact@v7
       with:
         name: OpenWrt-${{ env.DEVICE_NAME }}-Config
         path: /tmp/upload
 
     - name: 移除旧的 Artifacts
-      uses: c-hive/gha-remove-artifacts@v1.2.0
+      uses: c-hive/gha-remove-artifacts@v1.8.0
       with:
         age: '1 day'
         skip-recent: 5
 
     - name: 删除旧的 workflow 运行记录
-      uses: GitRML/delete-workflow-runs@main
+      uses: Mattraks/delete-workflow-runs@v2.1
       with:
         retain_days: 30
