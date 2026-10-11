@@ -1,44 +1,32 @@
-**English** | [中文](https://p3terx.com/archives/build-openwrt-with-github-actions.html)
+# GL-MT3000 ImmortalWrt 21.02 自动构建
 
-# Actions-OpenWrt
+[![OpenWrt Builder](../../actions/workflows/build-openwrt.yml/badge.svg)](../../actions/workflows/build-openwrt.yml)
+[![Update Checker](../../actions/workflows/update-checker.yml/badge.svg)](../../actions/workflows/update-checker.yml)
 
-[![LICENSE](https://img.shields.io/github/license/mashape/apistatus.svg?style=flat-square&label=LICENSE)](https://github.com/P3TERX/Actions-OpenWrt/blob/master/LICENSE)
-![GitHub Stars](https://img.shields.io/github/stars/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Stars&logo=github)
-![GitHub Forks](https://img.shields.io/github/forks/P3TERX/Actions-OpenWrt.svg?style=flat-square&label=Forks&logo=github)
+基于 [hanwckf/immortalwrt-mt798x](https://github.com/hanwckf/immortalwrt-mt798x)（`openwrt-21.02`），为 **GL.iNet GL-MT3000（MT7981）** 自动编译 ImmortalWrt 固件。
 
-A template for building OpenWrt with GitHub Actions
+## 特性
 
-## Usage
+- `luci-app-passwall`（最新版，sing-box + geoview，含中文）
+- Docker（dockerd + dockerman）
+- MTK 闭源 WiFi 驱动、HNAT / TurboACC 硬件加速、eqos-mtk QoS
+- UPnP、ZeroTier、diskman、autoreboot、vlmcsd、Argon 主题、简体中文
 
-- Click the [Use this template](https://github.com/P3TERX/Actions-OpenWrt/generate) button to create a new repository.
-- Generate `.config` files using [Lean's OpenWrt](https://github.com/coolsnowwolf/lede) source code. ( You can change it through environment variables in the workflow file. )
-- Push `.config` file to the GitHub repository.
-- Select `Build OpenWrt` on the Actions page.
-- Click the `Run workflow` button.
-- When the build is complete, click the `Artifacts` button in the upper right corner of the Actions page to download the binaries.
+管理地址 **192.168.3.1**，首次进入 LuCI 无密码。
 
-## Tips
+## 使用
 
-- It may take a long time to create a `.config` file and build the OpenWrt firmware. Thus, before create repository to build your own firmware, you may check out if others have already built it which meet your needs by simply [search `Actions-Openwrt` in GitHub](https://github.com/search?q=Actions-openwrt).
-- Add some meta info of your built firmware (such as firmware architecture and installed packages) to your repository introduction, this will save others' time.
+1. Fork 本仓库，在 Settings → Actions 中允许 Actions 运行
+2. 创建 fine-grained PAT（权限 `Contents: Read and write`），保存为 secret `BUILD_PAT`
+3. Actions → **OpenWrt Builder** → Run workflow 手动编译；**Update Checker** 每天自动检查上游更新并触发编译
+4. 完成后在 **Releases** 下载固件（保留最近 3 个）
 
-## Credits
+修改配置：直接改 `.config`，或用 **mt7981-config** workflow 导出解析后的配置（勾选 SSH 可进 runner 调 menuconfig）。
 
-- [Microsoft Azure](https://azure.microsoft.com)
-- [GitHub Actions](https://github.com/features/actions)
-- [OpenWrt](https://github.com/openwrt/openwrt)
-- [Lean's OpenWrt](https://github.com/coolsnowwolf/lede)
-- [tmate](https://github.com/tmate-io/tmate)
-- [mxschmitt/action-tmate](https://github.com/mxschmitt/action-tmate)
-- [csexton/debugger-action](https://github.com/csexton/debugger-action)
-- [Cowtransfer](https://cowtransfer.com)
-- [WeTransfer](https://wetransfer.com/)
-- [Mikubill/transfer](https://github.com/Mikubill/transfer)
-- [softprops/action-gh-release](https://github.com/softprops/action-gh-release)
-- [ActionsRML/delete-workflow-runs](https://github.com/ActionsRML/delete-workflow-runs)
-- [dev-drprasad/delete-older-releases](https://github.com/dev-drprasad/delete-older-releases)
-- [peter-evans/repository-dispatch](https://github.com/peter-evans/repository-dispatch)
+## 致谢
+
+[P3TERX/Actions-OpenWrt](https://github.com/P3TERX/Actions-OpenWrt) · [hanwckf/immortalwrt-mt798x](https://github.com/hanwckf/immortalwrt-mt798x) · [ImmortalWrt](https://github.com/immortalwrt) · [Openwrt-Passwall](https://github.com/Openwrt-Passwall)
 
 ## License
 
-[MIT](https://github.com/P3TERX/Actions-OpenWrt/blob/main/LICENSE) © [**P3TERX**](https://p3terx.com)
+[MIT](LICENSE)
